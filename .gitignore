@@ -14,3 +14,6 @@ Teammate_conversation/
 # éƒ¨ç½²ä¸å¯†é’¥
 .streamlit/secrets.toml
 .env
+
+# ÎÄÏ× PDF£¨°æÈ¨Ô­Òò²»Èë¿â£¬ÒıÓÃ¼û README/docs£©
+docs/ÂÛÎÄ/
