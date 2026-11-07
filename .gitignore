@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 本地/队内文件（不进入公开仓库）
+backups/
+outputs/
+Teammate_conversation/
+*.docx
+*.zip
+
+# 部署与密钥
+.streamlit/secrets.toml
+.env

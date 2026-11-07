@@ -1,0 +1,10 @@
+Rb 0.11[m] 球半径
+Db 2*Rb 球直径
+Uinf 31.46[m/s] 来流速度
+omg_ball 0[1/s] 球角速度，先不旋转
+rho_air 1.225[kg/m^3] 空气密度
+mu_air 1.81e-5[Pa*s] 空气动力黏度
+Aref pi*Rb^2 迎风面积
+qref 0.5*rho_air*Uinf^2*Aref 气动力归一化分母
+Re_ball rho_air*Uinf*Db/mu_air 雷诺数
+Sp_ball abs(omg_ball)*Rb/Uinf 旋转参数
