@@ -24,7 +24,7 @@ CFD-based model validation against COMSOL wind-tunnel data (§7).
 |---|---|---|
 | **A-1** | Fixed $C_D = 0.25$ + low-order effective spin $\Omega_\mathrm{eff}\times u$ | $v_0$ (3) + transverse $\Omega_\mathrm{eff}$ (2) |
 | **A-2** | Same closure, $C_D$ inverted with lognormal prior | $v_0$ (3) + $\log C_D$ + transverse $\Omega_\mathrm{eff}$ (2) |
-| **B** | Literature coefficient curves (PCHIP, placeholder pending digitized data) | $v_0$ (3) + transverse physical spin $\omega_\perp$ (2) |
+| **B** | Literature coefficient curves (Asai 2007 wind-tunnel fit; Goff & Carré 2009/2010) | $v_0$ (3) + transverse physical spin $\omega_\perp$ (2) |
 | **C** | COMSOL anchor coefficient table (plateau-averaged from hand-off CFD data) | $v_0$ (3) + transverse physical spin $\omega_\perp$ (2) |
 
 ### Key features
@@ -90,6 +90,23 @@ or simply double-click `启动实验台.bat`.
   $S = \pm 0.1748$).
 - COMSOL force histories contain startup/restart artifacts at the first rows
   (Fx ≈ 204 N / 265 N); these are excluded before plateau averaging.
+
+## Literature (pipeline B)
+
+Pipeline B implements the aerodynamic coefficient curves from the literature:
+
+- Asai, Seo, Kobayashi & Sakashita, *Sports Engineering* **10**, 101–110 (2007) —
+  Teamgeist wind-tunnel drag data.
+- Goff & Carré, *Am. J. Phys.* **77**, 1020–1027 (2009) — trajectory analysis,
+  post-critical $C_D \approx 0.27$–0.30 for 32-panel balls.
+- Goff & Carré, *Eur. J. Phys.* **31**, 775–784 (2010) — fitted
+  $C_D(v) = a + b/[1 + \exp((v-v_c)/v_s)]$ with $a=0.155$, $b=0.346$,
+  $v_c=12.19$ m/s, $v_s=1.309$ m/s ($\mathrm{Re}_c \approx 1.73\times10^5$);
+  spin correction $C_D = c\,\mathrm{Sp}^d$ with $c=0.4127$, $d=0.3056$;
+  $|C_L| \approx 0.8\,\mathrm{Sp}$ (linear region), saturating at 0.4 for
+  $\mathrm{Sp} > 0.5$. Queries beyond the experimental domain
+  ($\mathrm{Sp} > 0.3$ for $C_D$, $\mathrm{Sp} > 1$ overall) are flagged
+  as extrapolation.
 
 ## Citation / team
 

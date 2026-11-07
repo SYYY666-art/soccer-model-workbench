@@ -186,7 +186,7 @@ def pipeline_specific_params(model_id, bridge, lang="zh"):
 
 
 def main():
-    st.set_page_config(page_title="UPC 2026 Problem B Workbench", layout="wide")
+    st.set_page_config(page_title="Team 991 | UPC 2026 Problem B Workbench", layout="wide")
     inject_clean_css()
 
     # ---- 语言切换（中 / 英） ----
@@ -208,6 +208,7 @@ def main():
 
         # 经典算例库：选择后自动填入坐标，仍可手动微调任意输入
         preset_names = list(SimConfig.CASE_PRESETS)
+        # 首次进入：输入框预置基准算例（赛题数据）的取值
         _default_obs = {
             "t1_in": SimConfig.DEFAULT_T1, "t2_in": SimConfig.DEFAULT_T2,
             "x1_in": float(SimConfig.DEFAULT_R1[0]), "y1_in": float(SimConfig.DEFAULT_R1[1]),
@@ -217,11 +218,16 @@ def main():
         for _k, _v in _default_obs.items():
             if _k not in st.session_state:
                 st.session_state[_k] = _v
-        if "preset" not in st.session_state:
-            st.session_state.preset = preset_names[0]
-        prev_preset = st.session_state.get("prev_preset")
-        preset = st.selectbox(L["preset_label"],
-                              preset_names, key="preset")
+        # 选项显示名随语言变化（内部 key 固定），用 index 在 session 中保留选择
+        display_names = [SimConfig.CASE_PRESETS[k].get("name_en", k) if lang == "en" else k
+                         for k in preset_names]
+        if "preset_idx" not in st.session_state:
+            st.session_state.preset_idx = 0
+        prev_preset = preset_names[min(int(st.session_state.preset_idx), len(preset_names) - 1)]
+        picked = st.selectbox(L["preset_label"], display_names,
+                              index=st.session_state.preset_idx)
+        st.session_state.preset_idx = display_names.index(picked)
+        preset = preset_names[st.session_state.preset_idx]
         if preset != prev_preset and preset in SimConfig.CASE_PRESETS:
             c = SimConfig.CASE_PRESETS[preset]
             st.session_state["t1_in"] = float(c["t1"])
@@ -232,7 +238,6 @@ def main():
             st.session_state["x2_in"] = float(c["r2"][0])
             st.session_state["y2_in"] = float(c["r2"][1])
             st.session_state["z2_in"] = float(c["r2"][2])
-        st.session_state["prev_preset"] = preset
         preset_cfg = SimConfig.CASE_PRESETS[preset]
         st.caption(preset_cfg["desc"] if lang == "zh" else preset_cfg.get("desc_en", preset_cfg["desc"]))
 
@@ -256,41 +261,47 @@ def main():
         r2 = np.array([x2, y2, z2])
 
         # 可选第三观测帧：信息量显著增加，预测不确定性大幅缩小（论文 §1.3/§5.2）
-        use_t3 = st.checkbox(L["use_t3"], value=False, help=L["use_t3_help"])
+        use_t3 = st.checkbox(L["use_t3"], value=False, help=L["use_t3_help"], key="use_t3_in")
         if use_t3:
-            t3 = st.number_input(L["t3_label"], value=0.15, step=0.01, format="%.2f")
+            t3 = st.number_input(L["t3_label"], value=0.15, step=0.01, format="%.2f", key="t3_in")
             st.markdown(L["pos_t3_md"])
             cx3, cy3, cz3 = st.columns(3)
-            x3 = cx3.number_input("x₃", value=4.41, step=0.01, format="%.3f")
-            y3 = cy3.number_input("y₃", value=1.24, step=0.01, format="%.3f")
-            z3 = cz3.number_input("z₃", value=1.02, step=0.01, format="%.3f")
+            x3 = cx3.number_input("x₃", value=4.41, step=0.01, format="%.3f", key="x3_in")
+            y3 = cy3.number_input("y₃", value=1.24, step=0.01, format="%.3f", key="y3_in")
+            z3 = cz3.number_input("z₃", value=1.02, step=0.01, format="%.3f", key="z3_in")
             r3 = np.array([x3, y3, z3])
         else:
             t3, r3 = None, None
 
         st.divider()
         st.header(L["sec2_err"])
+        # radio 选项文本随语言变化，不能绑定 key；用 index 手动在 session 中保留选择
+        if "err_idx" not in st.session_state:
+            st.session_state.err_idx = 0
         err_choice = st.radio(
             L["err_label"],
             [L["err_gauss"], L["err_uniform"]],
-            help=L["err_help"])
+            help=L["err_help"], index=st.session_state.err_idx)
+        st.session_state.err_idx = [L["err_gauss"], L["err_uniform"]].index(err_choice)
         if err_choice == L["err_gauss"]:
             err_model = "gaussian"
             sigma_r = st.slider(L["sigma_label"], 0.001, 0.050, SimConfig.SIGMA_R_DEFAULT,
-                                0.001, format="%.3f")
+                                0.001, format="%.3f", key="sigma_r_in")
         else:
             err_model = "uniform"
             sigma_r = SimConfig.ROUNDING_HALFWIDTH
             st.caption(L["sigma_equiv"].format(v=f"{SimConfig.ROUNDING_HALFWIDTH / np.sqrt(3.0):.4f}"))
         n_samples = st.select_slider(L["n_samples"],
-                                     options=SimConfig.MC_N_OPTIONS, value=SimConfig.MC_N_DEFAULT)
+                                     options=SimConfig.MC_N_OPTIONS, value=SimConfig.MC_N_DEFAULT,
+                                     key="n_samples_in")
 
         st.divider()
         st.header(L["sec3_pipe"])
         model_id = st.selectbox(
             L["pipe_label"],
             ["A-2", "A-1", "B", "C"],
-            help=L["pipe_help"])
+            help=L["pipe_help"], key="model_id_pipe")
+        st.markdown(L["pipe_intro"])
         if model_id == "A-1":
             st.caption(L["cap_a1"], unsafe_allow_html=True)
         if model_id == "A-2":
@@ -312,18 +323,22 @@ def main():
             render_html_table([L["p_param"], L["p_value"]],
                               common_param_rows(L), min_width="420px")
 
+        with st.popover(L["ack_title"], use_container_width=True):
+            st.markdown(L["ack_body"])
+
         st.divider()
         st.header(L["sec4_wind"])
-        wx = st.number_input(L["wind_x"], value=0.0, step=0.5, format="%.1f")
-        wy = st.number_input(L["wind_y"], value=0.0, step=0.5, format="%.1f")
-        wz = st.number_input(L["wind_z"], value=0.0, step=0.5, format="%.1f")
+        wx = st.number_input(L["wind_x"], value=0.0, step=0.5, format="%.1f", key="wx_in")
+        wy = st.number_input(L["wind_y"], value=0.0, step=0.5, format="%.1f", key="wy_in")
+        wz = st.number_input(L["wind_z"], value=0.0, step=0.5, format="%.1f", key="wz_in")
         wind = np.array([wx, wy, wz])
         lam_parallel = st.slider(
             L["lam_label"],
             -10.0, 10.0, SimConfig.OMEGA_PARALLEL_DEFAULT, 0.5,
-            help=L["lam_help"])
-        show_cloud = st.checkbox(L["cloud_check"], value=True, help=L["cloud_help"])
-        show_legend_2d = st.checkbox(L["legend_check"], value=False, help=L["legend_help"])
+            help=L["lam_help"], key="lam_in")
+        show_cloud = st.checkbox(L["cloud_check"], value=True, help=L["cloud_help"], key="cloud_in")
+        show_legend_2d = st.checkbox(L["legend_check"], value=False, help=L["legend_help"],
+                                     key="legend_in")
 
     # ==================== 2. 合法性校验 ====================
     if t1 <= 0 or t2 <= t1:
@@ -445,8 +460,6 @@ def main():
         fig_2d = PenaltyVisualizer3D.build_2d_goal_heatmap(
             mc_data, base_res, show_legend=show_legend_2d, lang=lang)
         st.plotly_chart(fig_2d, width="stretch")
-
-    st.caption(L["cap_ellipse"])
 
     if base_res["near_tangent"]:
         st.warning(L["warn_tangent"])

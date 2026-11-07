@@ -44,36 +44,42 @@ class SimConfig:
     # 经典算例库：基准算例 + 五例典型球路（切换后自动填入坐标，仍可手动修改）
     CASE_PRESETS = {
         "基准算例（赛题数据）": {
+            "name_en": "Baseline case (problem data)",
             "t1": 0.05, "r1": [1.50, 0.45, 0.44],
             "t2": 0.10, "r2": [2.96, 0.86, 0.74],
             "desc": "赛题给定的两帧观测，用于复现基准分析流程",
             "desc_en": "The two observations given in the problem statement, for reproducing the baseline analysis",
         },
         "左脚大弧线（内旋左偏）": {
+            "name_en": "Left-foot in-swinger (left curve)",
             "t1": 0.05, "r1": [1.412, -0.179, 0.403],
             "t2": 0.10, "r2": [2.790, -0.414, 0.673],
             "desc": "内旋球，飞行末段显著向左侧弯曲",
             "desc_en": "In-swinging ball with strong leftward curvature in the late flight phase",
         },
         "电梯球（高抛急坠）": {
+            "name_en": "Knuckle-drop (high arc, sharp descent)",
             "t1": 0.05, "r1": [1.576, 0.148, 0.501],
             "t2": 0.10, "r2": [3.108, 0.292, 0.816],
             "desc": "高抛后急剧下坠的落叶球，竖直方向变化剧烈",
             "desc_en": "Knuckle-drop shot: high arc followed by a sharp vertical descent",
         },
         "贴地低平球（左下角）": {
+            "name_en": "Low drive (bottom-left corner)",
             "t1": 0.05, "r1": [1.674, -0.419, 0.196],
             "t2": 0.10, "r2": [3.302, -0.826, 0.252],
             "desc": "低平快球，贴地直奔球门左下角",
             "desc_en": "Low, flat and fast shot skimming toward the bottom-left corner",
         },
         "擦门柱极限算例（净空判据）": {
+            "name_en": "Post-grazing limit case (clearance criterion)",
             "t1": 0.05, "r1": [1.479, 0.501, 0.398],
             "t2": 0.10, "r2": [2.921, 0.975, 0.662],
             "desc": "落点位于门框内缘，检验整球净空判据的极限情形",
             "desc_en": "Impact point at the inner edge of the frame, testing the limiting case of the full-ball clearance criterion",
         },
         "正脚背爆射（直线上角）": {
+            "name_en": "Power drive (top corner)",
             "t1": 0.05, "r1": [1.771, 0.049, 0.391],
             "t2": 0.10, "r2": [3.489, 0.097, 0.646],
             "desc": "高速直球，横向弯曲极小，直指球门上角",

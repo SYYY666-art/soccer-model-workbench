@@ -12,7 +12,7 @@ HTML 下标（<sub>）只在 unsafe_allow_html=True 的组件中使用。
 ZH = {
     # ---- 语言按钮与标题 ----
     "btn_lang": "English",
-    "app_title": "UPC 2026 Problem B · 点球轨迹预测实验台",
+    "app_title": "UPC 2026 Problem B · Team 991 · 点球轨迹预测实验台",
     # ---- 侧边栏 1：观测数据 ----
     "sec1_obs": "1. 观测数据",
     "preset_label": "经典算例（选择后自动填入，可再手动修改）",
@@ -30,7 +30,7 @@ ZH = {
     "err_label": "观测误差模型",
     "err_gauss": "独立高斯 σᵣ",
     "err_uniform": "独立均匀舍入 ±0.005 m",
-    "err_help": "坐标保留两位小数并不自动意味着 ±0.005 m 均匀分布（论文 §5.1）",
+    "err_help": "坐标保留两位小数并不自动意味着 ±0.005 m 均匀分布",
     "sigma_label": "观测位置标准差 σᵣ (m)",
     "sigma_equiv": "等效标准差 σ ≈ {v} m",
     "n_samples": "蒙特卡洛样本数（平台预览）",
@@ -39,10 +39,40 @@ ZH = {
     "pipe_label": "选择 A/B/C 管线",
     "pipe_help": "A-1：固定 C_D 反演 v₀ + 2 横向有效旋转；A-2：六参数候选（需 SVD 诊断）；"
                  "B：文献气动曲线；C：COMSOL 系数图谱",
+    "pipe_intro": "**模型管线说明**（三条气动闭合共享同一状态接口与观测似然，仅闭合关系不同，"
+                  "以保证模型间比较公平）\n\n"
+                  "- **A-1**：阻力系数 $C_D$ 固定为 0.25；反演初速度 $v_0$ 与两个横向有效旋转分量 "
+                  "$\\Omega_{\\rm eff}$（共 5 参数），构成稳健基准模型。\n"
+                  "- **A-2**：$\\log C_D$ 在对数正态先验下联合反演（共 6 参数）；由 SVD 条件数 $\\kappa$ "
+                  "给出可辨识性诊断，区分“可拟合”与“可辨识”。\n"
+                  "- **B**：阻力与升力系数由文献曲线给定（Asai 2007；Goff & Carré 2009/2010）；"
+                  "反演初速度与横向真实自旋 $\\omega_\\perp$。\n"
+                  "- **C**：阻力与升力系数由 COMSOL 风洞实测锚点表给定；"
+                  "反演初速度与横向真实自旋 $\\omega_\\perp$。",
+    "ack_title": "鸣谢（参考文献）",
+    "ack_body": "B 管线的气动系数曲线基于以下文献工作，谨致谢意：\n\n"
+                "- Asai, Seo, Kobayashi & Sakashita, *Fundamental aerodynamics of the soccer ball*, "
+                "Sports Engineering **10**, 101–110 (2007).\n"
+                "- Goff & Carré, *Trajectory analysis of a soccer ball*, American Journal of Physics "
+                "**77**, 1020–1027 (2009).\n"
+                "- Goff & Carré, *Soccer ball lift coefficients via trajectory analysis*, European "
+                "Journal of Physics **31**, 775–784 (2010).\n"
+                "- Ward et al., *The effect of surface geometry on the aerodynamic behaviour of a "
+                "football*, Sports Engineering **26**, 33 (2023).\n\n"
+                "其余引用：\n\n"
+                "- Asai & Seo, *Aerodynamic drag of modern soccer balls*, SpringerPlus **2**, 171 (2013).\n"
+                "- Mizota et al., *The strange flight behaviour of slowly spinning soccer balls*, "
+                "Scientific Reports **3**, 1871 (2013).\n"
+                "- Darbois Texier et al., *Physics of knuckleballs*, New Journal of Physics **18**, "
+                "073027 (2016).\n"
+                "- Dupeux et al., *Football curves*, Journal of Fluids and Structures **27**, 659–667 "
+                "(2011).\n"
+                "- Grad, *Physics-based 3D ball trajectory reconstruction from monocular soccer video: "
+                "A multi-model benchmark*, CVPR Workshops (2026).",
     "cap_a1": "A-1：阻力系数固定 C<sub>D</sub> = 0.25，反演初速度与两个横向有效旋转分量（5 参数）",
     "cap_a2": "A-2：六参数候选模型（初速度、log C<sub>D</sub>、横向 Ω<sub>eff</sub>），"
               "需经 SVD 条件数诊断参数可辨识性",
-    "cap_b": "B：文献气动系数曲线（当前为占位曲线，正式使用前需替换为文献数字化数据）",
+    "cap_b": "B：文献气动系数曲线（Asai 2007 风洞拟合 + Goff & Carré 2009/2010 轨迹分析）",
     "cap_c_ok": "C：COMSOL 锚点系数表已自动加载（grid_version = {v}，由交接数据平台期平均自动生成），"
                 "覆盖 Re ∈ [4.2×10⁵, 4.7×10⁵]、|S| ≤ 0.175；越界查询按边界值处理并标记外推。",
     "cap_c_fail": "C：COMSOL 锚点表生成失败，请检查交接数据目录是否完整。",
@@ -87,10 +117,10 @@ ZH = {
     "ps_a2_par_v": "初速度 v₀ (3) + log C<sub>D</sub> + 横向 Ω<sub>eff</sub> (2)，共 6 维",
     "ps_a2_diag_v": "SVD 条件数 κ、参数标准误 SE",
     "ps_a2_clo_v": "同 A-1（常系数阻力 + 有效旋转项）",
-    "ps_b_src_v": "文献曲线（PCHIP 保形插值），Re ∈ [1×10⁴, 2×10⁶]",
+    "ps_b_src_v": "Asai 2007 风洞数据拟合（Goff & Carré 2010）；临界转捩 Re_c ≈ 1.73×10⁵",
     "ps_b_par_v": "初速度 v₀ (3) + 横向真实自旋 ω⊥ (2)，共 5 维",
     "ps_b_sig_v": "40.0",
-    "ps_b_sta_v": "占位曲线，未经验证；正式使用前需替换为文献数字化数据",
+    "ps_b_sta_v": "文献曲线已替换；Sp > 0.3 的 C_D 为文献外推，Sp > 1 无实验数据",
     "ps_c_src_v": "COMSOL 锚点系数表（grid_version = {v}）",
     "ps_c_par_v": "初速度 v₀ (3) + 横向真实自旋 ω⊥ (2)，共 5 维",
     "ps_c_dom_v": "Re ∈ [4.2×10⁵, 4.7×10⁵]，|S| ≤ 0.175",
@@ -102,7 +132,7 @@ ZH = {
     "wind_z": "风速 z 分量 (m/s)",
     "lam_label": "自旋轴向分量 ω∥ (rad/s)（诊断/敏感性）",
     "lam_help": "平行于速度的自旋分量对经典 Magnus 力无直接贡献；此处仅作诊断/敏感性量，"
-                "不得解释为已被观测识别的真实角速度（论文 §5.4）",
+                "不得解释为已被观测识别的真实角速度",
     "cloud_check": "显示可能位置云团",
     "cloud_help": "关闭后 3D 球场中的速度/升力/加速度矢量箭头更清晰",
     "legend_check": "显示球门平面图图例",
@@ -142,9 +172,9 @@ ZH = {
     "cap_ellipse": "95% 置信区域尺度较大的原因：两帧观测间隔仅约 0.05 s，观测误差在过门线时刻被放大约 60~80 倍。"
                    "提高精度的途径：① 选择更精确的误差模型（如均匀舍入 ±0.005 m，或调小 σᵣ）；"
                    "② 在左侧启用第三观测帧 t₃（信息量增加，置信区域显著收窄）。",
-    "warn_tangent": "$|v_x(t_g)|$ 低于阈值：该轨迹接近切触球门平面，一阶灵敏度线性传播可能失效（论文 §6.5）。",
+    "warn_tangent": "$|v_x(t_g)|$ 低于阈值：该轨迹接近切触球门平面，一阶灵敏度线性传播可能失效。",
     # ---- 第 7 部分：基线 ----
-    "exp_base": "数据诊断基线（区间平均速度、三点恒加速度、重力基线，§2）",
+    "exp_base": "数据诊断基线（区间平均速度、三点恒加速度、重力基线）",
     "th_method": "基线方法",
     "th_v0": "v₀ (m/s)",
     "th_tg": "t<sub>g</sub> (s)",
@@ -156,9 +186,9 @@ ZH = {
     "row_g1": "重力基线（仅用 r₁）",
     "row_gls": "重力基线（全部观测最小二乘）",
     "cap_base": "区间平均速度不同说明恒速模型不足以解释观测；三点恒加速度严格穿过全部观测点，"
-                "是运动学基线而非空气动力学真值（论文 §2）。",
+                "是运动学基线而非空气动力学真值。",
     # ---- 第 8 部分：事件统计 ----
-    "exp_events": "事件标签统计与蒙特卡洛分位数（§6）",
+    "exp_events": "事件标签统计与蒙特卡洛分位数",
     "ev_title": "事件标签统计（保留全部样本）",
     "th_event": "事件",
     "th_count": "数量",
@@ -181,9 +211,9 @@ ZH = {
     "qt_z": "竖直落点 Z<sub>g</sub> (m)",
     "qt_t": "过线时刻 t<sub>g</sub> (s)",
     "cap_quant": "均值、中位数与密度众数见球门平面图；二维分布偏斜或多峰时 95% 高斯椭圆仅作参考，"
-                 "应以 HDR 等高线为准（论文 §6.3）。",
+                 "应以 HDR 等高线为准。",
     # ---- 第 9 部分：包络 ----
-    "exp_env": "A/B/C 模型包络对比与方差分解（§6.1）",
+    "exp_env": "A/B/C 模型包络对比与方差分解",
     "env_check": "运行模型包络计算（A-1 / A-2 / B / C，约需数秒）",
     "env_spinner": "多模型反演与概率传播计算中……",
     "th_model": "模型",
@@ -201,10 +231,11 @@ ZH = {
              "- Z 轴：$E[\\mathrm{{Var}}]={ez:.5f}$ m²，$\\mathrm{{Var}}[E]={vz:.5f}$ m²，\n"
              "  模型间方差占比 {fz:.1%}\n\n"
              "若模型权重无独立数据校准，应分别报告条件分布或模型集合包络，\n"
-             "不可主观指定权重并称其为概率（论文 §6.1）。",
-    "cap_env": "注：B 管线当前为占位曲线；包络结果在数据补齐前仅为接口演示，不可作为论文结论。",
+             "不可主观指定权重并称其为概率。",
+    "cap_env": "注：B 管线采用文献曲线（Asai 2007; Goff & Carré 2009/2010），Sp>0.3 区为文献外推；"
+               "包络结果在数据补齐前仅为接口演示，不可作为论文结论。",
     # ---- 第 10 部分：COMSOL ----
-    "exp_comsol": "COMSOL 实测数据对照（光滑球风洞，§7）",
+    "exp_comsol": "COMSOL 实测数据对照（光滑球风洞）",
     "comsol_fail": "交接数据解析失败：{e}（请确认交接数据目录完整）",
     "comsol_cond": "风洞工况（05 全局参数）：U∞ = {u} m/s，Re ≈ {re:.2e}，"
                    "旋转比 S = ±{s:.3f}（ω<sub>z</sub> = ±{om} rad/s），光滑球、标准 k–ε 湍流模型，"
@@ -239,7 +270,7 @@ ZH = {
 
 EN = {
     "btn_lang": "中文",
-    "app_title": "UPC 2026 Problem B · Penalty-Trajectory Prediction Workbench",
+    "app_title": "UPC 2026 Problem B · Team 991 · Penalty-Trajectory Prediction Workbench",
     "sec1_obs": "1. Observation Data",
     "preset_label": "Benchmark cases (auto-filled; editable)",
     "t1_label": "Observation time t₁ (s)",
@@ -255,7 +286,7 @@ EN = {
     "err_label": "Observation error model",
     "err_gauss": "Independent Gaussian σᵣ",
     "err_uniform": "Independent uniform rounding ±0.005 m",
-    "err_help": "Two-decimal coordinates do not automatically imply a ±0.005 m uniform distribution (paper §5.1)",
+    "err_help": "Two-decimal coordinates do not automatically imply a ±0.005 m uniform distribution",
     "sigma_label": "Position standard deviation σᵣ (m)",
     "sigma_equiv": "Equivalent σ ≈ {v} m",
     "n_samples": "Monte Carlo sample size (preview)",
@@ -263,12 +294,46 @@ EN = {
     "pipe_label": "Select pipeline A/B/C",
     "pipe_help": "A-1: fixed C_D, invert v₀ + 2 transverse effective spins; A-2: six-parameter candidate "
                  "(requires SVD diagnostics); B: literature aerodynamic curves; C: COMSOL coefficient map",
+    "pipe_intro": "**Model pipelines** (the three aerodynamic closures share one state interface and "
+                  "observation likelihood; only the closure relation differs, ensuring a fair "
+                  "inter-model comparison)\n\n"
+                  "- **A-1**: drag coefficient $C_D$ fixed at 0.25; initial velocity $v_0$ and two "
+                  "transverse effective-spin components $\\Omega_{\\rm eff}$ inverted (5 parameters) — "
+                  "a robust baseline model.\n"
+                  "- **A-2**: $\\log C_D$ jointly inverted under a lognormal prior (6 parameters); the SVD "
+                  "condition number $\\kappa$ diagnoses identifiability, distinguishing “fittable” from "
+                  "“identifiable”.\n"
+                  "- **B**: drag and lift coefficients given by literature curves (Asai 2007; "
+                  "Goff & Carré 2009/2010); initial velocity and transverse physical spin "
+                  "$\\omega_\\perp$ inverted.\n"
+                  "- **C**: drag and lift coefficients given by the COMSOL wind-tunnel anchor table; "
+                  "initial velocity and transverse physical spin $\\omega_\\perp$ inverted.",
+    "ack_title": "Acknowledgments (References)",
+    "ack_body": "The aerodynamic coefficient curves of pipeline B are based on the following works, "
+                "with gratitude:\n\n"
+                "- Asai, Seo, Kobayashi & Sakashita, *Fundamental aerodynamics of the soccer ball*, "
+                "Sports Engineering **10**, 101–110 (2007).\n"
+                "- Goff & Carré, *Trajectory analysis of a soccer ball*, American Journal of Physics "
+                "**77**, 1020–1027 (2009).\n"
+                "- Goff & Carré, *Soccer ball lift coefficients via trajectory analysis*, European "
+                "Journal of Physics **31**, 775–784 (2010).\n"
+                "- Ward et al., *The effect of surface geometry on the aerodynamic behaviour of a "
+                "football*, Sports Engineering **26**, 33 (2023).\n\n"
+                "Additional references:\n\n"
+                "- Asai & Seo, *Aerodynamic drag of modern soccer balls*, SpringerPlus **2**, 171 (2013).\n"
+                "- Mizota et al., *The strange flight behaviour of slowly spinning soccer balls*, "
+                "Scientific Reports **3**, 1871 (2013).\n"
+                "- Darbois Texier et al., *Physics of knuckleballs*, New Journal of Physics **18**, "
+                "073027 (2016).\n"
+                "- Dupeux et al., *Football curves*, Journal of Fluids and Structures **27**, 659–667 "
+                "(2011).\n"
+                "- Grad, *Physics-based 3D ball trajectory reconstruction from monocular soccer video: "
+                "A multi-model benchmark*, CVPR Workshops (2026).",
     "cap_a1": "A-1: drag coefficient fixed at C<sub>D</sub> = 0.25; inverts initial velocity and two "
               "transverse effective-spin components (5 parameters)",
     "cap_a2": "A-2: six-parameter candidate (initial velocity, log C<sub>D</sub>, transverse Ω<sub>eff</sub>); "
               "identifiability must be diagnosed via the SVD condition number",
-    "cap_b": "B: literature aerodynamic coefficient curves (placeholder at present; replace with digitized "
-             "literature data before formal use)",
+    "cap_b": "B: literature aerodynamic coefficient curves (Asai 2007 wind-tunnel fit; Goff & Carré 2009/2010)",
     "cap_c_ok": "C: COMSOL anchor coefficient table loaded automatically (grid_version = {v}, averaged over the "
                 "plateau of the hand-off data); coverage Re ∈ [4.2×10⁵, 4.7×10⁵], |S| ≤ 0.175; "
                 "out-of-range queries use boundary values and are flagged as extrapolation.",
@@ -315,10 +380,10 @@ EN = {
     "ps_a2_par_v": "Initial velocity v₀ (3) + log C<sub>D</sub> + transverse Ω<sub>eff</sub> (2); 6 parameters",
     "ps_a2_diag_v": "SVD condition number κ, parameter standard errors",
     "ps_a2_clo_v": "Same as A-1 (constant drag + effective spin term)",
-    "ps_b_src_v": "Literature curves (PCHIP shape-preserving), Re ∈ [1×10⁴, 2×10⁶]",
+    "ps_b_src_v": "Fit to Asai 2007 wind-tunnel data (Goff & Carré 2010); critical transition Re_c ≈ 1.73×10⁵",
     "ps_b_par_v": "Initial velocity v₀ (3) + transverse physical spin ω⊥ (2); 5 parameters",
     "ps_b_sig_v": "40.0",
-    "ps_b_sta_v": "Placeholder curves, unverified; replace with digitized literature data before formal use",
+    "ps_b_sta_v": "Literature curves in place; C_D for Sp > 0.3 is a literature extrapolation, no data for Sp > 1",
     "ps_c_src_v": "COMSOL anchor coefficient table (grid_version = {v})",
     "ps_c_par_v": "Initial velocity v₀ (3) + transverse physical spin ω⊥ (2); 5 parameters",
     "ps_c_dom_v": "Re ∈ [4.2×10⁵, 4.7×10⁵], |S| ≤ 0.175",
@@ -330,7 +395,7 @@ EN = {
     "lam_label": "Axial spin component ω∥ (rad/s) (diagnostic)",
     "lam_help": "The spin component parallel to the velocity makes no direct contribution to the classical "
                 "Magnus force; it is a diagnostic/sensitivity quantity only and must not be interpreted as "
-                "an observationally identified physical spin (paper §5.4)",
+                "an observationally identified physical spin",
     "cloud_check": "Show possible position cloud",
     "cloud_help": "Disabling makes the velocity/lift/acceleration arrows in the 3-D stadium clearer",
     "legend_check": "Show goal-plane legend",
@@ -369,8 +434,8 @@ EN = {
                    "precision: ① use a more accurate error model (e.g., uniform rounding ±0.005 m, or reduce σᵣ); "
                    "② enable the third observation t₃ in the sidebar (more information, much tighter region).",
     "warn_tangent": "$|v_x(t_g)|$ below threshold: the trajectory nearly grazes the goal plane, so first-order "
-                    "sensitivity propagation may fail (paper §6.5).",
-    "exp_base": "Data diagnostics baselines (interval mean velocity, constant acceleration, gravity, §2)",
+                    "sensitivity propagation may fail.",
+    "exp_base": "Data diagnostics baselines (interval mean velocity, constant acceleration, gravity)",
     "th_method": "Baseline method",
     "th_v0": "v₀ (m/s)",
     "th_tg": "t<sub>g</sub> (s)",
@@ -383,8 +448,8 @@ EN = {
     "row_gls": "Gravity baseline (all observations, LS)",
     "cap_base": "Differing interval mean velocities show that a constant-velocity model cannot explain the "
                 "observations; the three-point constant-acceleration fit passes through all observation points "
-                "and is a kinematic baseline, not an aerodynamic truth (paper §2).",
-    "exp_events": "Event-label statistics and Monte Carlo quantiles (§6)",
+                "and is a kinematic baseline, not an aerodynamic truth.",
+    "exp_events": "Event-label statistics and Monte Carlo quantiles",
     "ev_title": "Event-label statistics (all samples kept)",
     "th_event": "Event",
     "th_count": "Count",
@@ -408,8 +473,8 @@ EN = {
     "qt_t": "Crossing time t<sub>g</sub> (s)",
     "cap_quant": "Mean, median and density mode are shown in the goal-plane figure; for skewed or multimodal "
                  "2-D distributions the 95% Gaussian ellipse is only a reference and the HDR contour should be "
-                 "used (paper §6.3).",
-    "exp_env": "A/B/C model-envelope comparison and variance decomposition (§6.1)",
+                 "used.",
+    "exp_env": "A/B/C model-envelope comparison and variance decomposition",
     "env_check": "Run model-envelope computation (A-1 / A-2 / B / C, a few seconds)",
     "env_spinner": "Multi-model inversion and uncertainty propagation…",
     "th_model": "Model",
@@ -429,10 +494,11 @@ EN = {
              "between-model fraction {fz:.1%}\n\n"
              "If model weights are not calibrated on independent data, report conditional distributions or the "
              "model ensemble envelope separately; do not assign subjective weights and call the result a "
-             "probability (paper §6.1).",
-    "cap_env": "Note: pipeline B currently uses placeholder curves; envelope results are interface "
-               "demonstrations only until the data are complete, and must not be used as paper conclusions.",
-    "exp_comsol": "COMSOL measured-data comparison (smooth-sphere wind tunnel, §7)",
+             "probability.",
+    "cap_env": "Note: pipeline B uses literature curves (Asai 2007; Goff & Carré 2009/2010) with a "
+               "literature extrapolation for Sp > 0.3; envelope results are interface demonstrations "
+               "until the data are complete, and must not be used as paper conclusions.",
+    "exp_comsol": "COMSOL measured-data comparison (smooth-sphere wind tunnel)",
     "comsol_fail": "Failed to parse hand-off data: {e} (check that the hand-off data directory is complete)",
     "comsol_cond": "Wind-tunnel conditions (global parameters file 05): U∞ = {u} m/s, Re ≈ {re:.2e}, "
                    "spin ratio S = ±{s:.3f} (ω<sub>z</sub> = ±{om} rad/s), smooth sphere, standard k–ε turbulence "

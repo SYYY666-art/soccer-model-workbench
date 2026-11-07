@@ -1,0 +1,37 @@
+# 在竞赛截止时刻自动将仓库从私有转为公开。
+#
+# 触发时间：2026-11-08 22:00 UTC（北京时间 2026-11-09 06:00）。
+# 若因故未按时触发，也可在截止后到 Actions 页面手动 Run workflow（日期检查会放行）。
+name: Publish repository after competition deadline
+
+on:
+  schedule:
+    # 每年 11 月 8 日 22:00 UTC（仅 2026 年生效，见日期检查步骤）
+    - cron: "0 22 8 11 *"
+  workflow_dispatch: {}
+
+jobs:
+  make-public:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check deadline date (2026-11-08 UTC only)
+        run: |
+          TODAY="$(date -u +%Y-%m-%d)"
+          echo "Today (UTC): ${TODAY}"
+          if [ "${TODAY}" != "2026-11-08" ]; then
+            echo "Not the deadline date yet; skipping publication."
+            exit 78
+          fi
+
+      - name: Set repository visibility to public
+        run: |
+          gh api -X PATCH "repos/${{ github.repository }}" -f private=false \
+            --jq '.visibility'
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+
+      - name: Confirm visibility
+        run: |
+          gh api "repos/${{ github.repository }}" --jq '"visibility: " + .visibility'
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}

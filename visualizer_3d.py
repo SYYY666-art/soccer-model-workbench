@@ -344,15 +344,15 @@ class PenaltyVisualizer3D:
 
         title = L["title2d"]
         if probs:
-            title += (f" | {L['p_reach'].format(v=probs.get('P_reach', 0))} "
-                      f"{L['p_in'].format(v=probs.get('P_in_given_reach', 0))} "
+            title += (f"<br>{L['p_reach'].format(v=probs.get('P_reach', 0))} · "
+                      f"{L['p_in'].format(v=probs.get('P_in_given_reach', 0))} · "
                       f"{L['p_ground'].format(v=probs.get('P_ground', 0))}")
 
         fig.update_layout(
             title=title,
             xaxis=dict(title=L["ax2d_y"], range=[y_min, y_max]),
             yaxis=dict(title=L["ax2d_z"], range=[z_min, z_max]),
-            height=580, margin=dict(l=20, r=20, b=20, t=65), showlegend=show_legend,
+            height=600, margin=dict(l=20, r=20, b=20, t=88), showlegend=show_legend,
             legend=dict(
                 orientation="h", yanchor="bottom", y=0.62, xanchor="center", x=0.5,
                 bgcolor="rgba(255,255,255,0.85)"

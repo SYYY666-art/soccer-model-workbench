@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.integrate import solve_ivp
 from scipy.optimize import least_squares
-from scipy.interpolate import PchipInterpolator
 from config import SimConfig
 
 
@@ -33,31 +32,46 @@ class ClosureA(AeroClosureBase):
 
 
 class ClosureB(AeroClosureBase):
-    """B：文献实验气动系数曲线（PCHIP 保形插值，Re 轴按 log10 插值）。
+    """B：文献气动系数曲线（Asai 2007 风洞数据 + Goff & Carré 2009/2010 拟合）。
 
-    注意：当前曲线为"占位形态曲线"（足球典型转捩/超临界阻力形态 + 线性-S 升力斜率），
-    仅用于演示 B 管线接口；正式论文必须替换为与球型匹配的文献数字化数据
-    （如 Asai 等风洞 C_D(Re)、C_L(Re,S) 曲线），并保存原始数字化点与出处。
-    超出实验区间时置 extrapolation_flag=True，不得无声外推。"""
+    无旋阻力（Goff & Carré 2010, Eur. J. Phys. 31, 775-784, 式(3)，
+    对 Asai et al. 2007, Sports Eng. 10, 101-110 的 Teamgeist 风洞数据拟合）：
+        C_D(v) = a + b / (1 + exp[(v - v_c)/v_s]),
+        a = 0.155, b = 0.346, v_c = 12.19 m/s, v_s = 1.309 m/s，
+        对应临界雷诺数 Re_c ≈ 1.73×10⁵（亚临界 ≈ 0.50 → 超临界 ≈ 0.155）。
+
+    自旋修正（v > v_c 且 Sp > 0.05，式(4)）：
+        C_D = c·Sp^d，c = 0.4127，d = 0.3056；
+        文献注明该式对 Sp > 0.3 为外推，Sp > 1 无实验数据。
+
+    升力系数：|C_L| 与 Sp 近似线性（Asai 2007 风洞 Sp≤0.3 区斜率与
+    Goff & Carré 2010 图 7 线性区综合估计斜率 k ≈ 0.8）；
+    Sp > 0.5 取平台值 0.4（Goff & Carré 2010 图 7 观测到的饱和趋势）。
+    符号由经典 Magnus 方向 e_L = ω×u/|ω×u| 给出。
+
+    超出数据域的查询（Sp>0.3 的 C_D 外推、Sp>1）置 extrapolation_flag=True，
+    不静默外推。参考：Goff & Carré, Am. J. Phys. 77, 1020-1027 (2009)
+    （32 面板球后临界 C_D ≈ 0.27-0.30，C_L(Sp≈0.25) ≈ 0.27-0.31）。"""
     model_id = "B"
 
-    def __init__(self):
-        re_pts = np.array([1e4, 5e4, 1e5, 2e5, 3e5, 4e5, 6e5, 1e6, 2e6])
-        cd_pts = np.array([0.45, 0.45, 0.42, 0.30, 0.22, 0.17, 0.18, 0.22, 0.25])
-        cl_slope_pts = np.array([0.80, 0.80, 0.75, 0.62, 0.55, 0.50, 0.45, 0.40, 0.35])
-        self._cd = PchipInterpolator(np.log10(re_pts), cd_pts)
-        self._cl_slope = PchipInterpolator(np.log10(re_pts), cl_slope_pts)
-        self.re_bounds = (float(re_pts[0]), float(re_pts[-1]))
+    # Goff & Carré 2010 式(3)/(4) 拟合参数
+    A_CD, B_CD, VC, VS = 0.155, 0.346, 12.19, 1.309
+    C_CD, D_CD = 0.4127, 0.3056
+    # 升力线性斜率与平台（文献图 6/7 线性区综合估计）
+    CL_SLOPE, CL_PLAT, CL_PLAT_SP = 0.8, 0.4, 0.5
+    SP_D_EXTRAP = 0.3      # C_D(Sp) 幂律的实验覆盖上界
 
     def __call__(self, u, omega, t=0.0):
         um = np.linalg.norm(u) + 1e-9
-        re = SimConfig.RHO_AIR * SimConfig.DIAMETER * um / SimConfig.MU_AIR
-        flag = not (self.re_bounds[0] <= re <= self.re_bounds[1])
-        log_re = float(np.log10(np.clip(re, self.re_bounds[0], self.re_bounds[1])))
-        cd = float(self._cd(log_re))
-        s = SimConfig.RADIUS * np.linalg.norm(omega) / um
-        cl = float(self._cl_slope(log_re)) * float(np.clip(s, -0.5, 0.5))
-        return cd, cl, 0.0, bool(flag)
+        sp = float(SimConfig.RADIUS * np.linalg.norm(omega) / um)
+        flag = bool(sp > 1.0)  # Sp>1 无任何实验数据
+        if sp > 0.05 and um > self.VC:
+            cd = self.C_CD * sp ** self.D_CD
+            flag = flag or bool(sp > self.SP_D_EXTRAP)
+        else:
+            cd = self.A_CD + self.B_CD / (1.0 + np.exp((um - self.VC) / self.VS))
+        cl = self.CL_SLOPE * sp if sp <= self.CL_PLAT_SP else self.CL_PLAT
+        return float(cd), float(cl), 0.0, bool(flag)
 
 
 class ClosureC(AeroClosureBase):
@@ -411,11 +425,13 @@ class TrajectoryPhysicsEngine:
         acc_total = np.zeros((3, len(t_eval)))
         acc_drag = np.zeros((3, len(t_eval)))
         acc_lift = np.zeros((3, len(t_eval)))
+        cd_traj = np.zeros(len(t_eval))
         for i in range(len(t_eval)):
             vi = states_ode[3:, i]
             u = vi - wind
             um = np.linalg.norm(u) + 1e-9
             cd, cl, cs, _flag = closure(u, omega_opt, t_eval[i])
+            cd_traj[i] = cd
             ad = -q * cd * um * u
             if omega_mode == "effective":
                 al = np.cross(omega_opt, u)
@@ -450,7 +466,8 @@ class TrajectoryPhysicsEngine:
             "acc_magnus": acc_lift,          # 升力/有效旋转项（旧名兼容）
             "pos_ca": pos_ca,
             "v0_ode": v0_opt,
-            "cd_ode": cd_opt if cd_opt is not None else float(closure(SimConfig.WIND_DEFAULT, omega_opt)[0]),
+            "cd_ode": (cd_opt if cd_opt is not None
+                       else float(np.mean(cd_traj))),   # B/C：曲线给定，报告轨迹平均 C_D
             "omega_ode": omega_opt,
             "t_goal_ode": float(t_event) if label == "goal" else float(t_end),
             "v0_ca": v0_ca,
