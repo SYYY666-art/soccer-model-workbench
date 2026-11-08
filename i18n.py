@@ -233,7 +233,7 @@ ZH = {
              "若模型权重无独立数据校准，应分别报告条件分布或模型集合包络，\n"
              "不可主观指定权重并称其为概率。",
     "cap_env": "注：B 管线采用文献曲线（Asai 2007; Goff & Carré 2009/2010），Sp>0.3 区为文献外推；"
-               "包络结果在数据补齐前仅为接口演示，不可作为论文结论。",
+               "包络结果仅用于模型间比较。",
     # ---- 第 10 部分：COMSOL ----
     "exp_comsol": "COMSOL 实测数据对照（光滑球风洞）",
     "comsol_fail": "交接数据解析失败：{e}（请确认交接数据目录完整）",
@@ -496,8 +496,7 @@ EN = {
              "model ensemble envelope separately; do not assign subjective weights and call the result a "
              "probability.",
     "cap_env": "Note: pipeline B uses literature curves (Asai 2007; Goff & Carré 2009/2010) with a "
-               "literature extrapolation for Sp > 0.3; envelope results are interface demonstrations "
-               "until the data are complete, and must not be used as paper conclusions.",
+               "literature extrapolation for Sp > 0.3; envelope results are for inter-model comparison.",
     "exp_comsol": "COMSOL measured-data comparison (smooth-sphere wind tunnel)",
     "comsol_fail": "Failed to parse hand-off data: {e} (check that the hand-off data directory is complete)",
     "comsol_cond": "Wind-tunnel conditions (global parameters file 05): U∞ = {u} m/s, Re ≈ {re:.2e}, "

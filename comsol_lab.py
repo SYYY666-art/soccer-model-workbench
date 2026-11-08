@@ -338,8 +338,8 @@ def build_force_timeseries_fig(res, lang="zh"):
                              name=L["dneg"], line=dict(color="#2563eb")), row=2, col=1)
     fig.add_hline(y=0.0, line=dict(color="#94a3b8", width=1, dash="dash"), row=2, col=1)
 
-    fig.update_layout(height=520, margin=dict(l=10, r=10, t=50, b=10),
-                      legend=dict(orientation="h", y=1.08, x=0.0),
+    fig.update_layout(height=560, margin=dict(l=10, r=10, t=80, b=10),
+                      legend=dict(orientation="h", y=1.16, x=0.0, yanchor="bottom"),
                       hovermode="x unified",
                       template="plotly_white")
     fig.update_xaxes(title_text=L["tx"], row=2, col=1)
