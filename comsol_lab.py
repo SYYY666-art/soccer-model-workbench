@@ -33,7 +33,7 @@ OMEGA_PLAT = 50.0                                  # rad/s 自旋平台
 S_PLAT = OMEGA_PLAT * R_BALL / U_INF              # 有符号旋转比 ±0.17483
 PLATEAU_T0, PLATEAU_T1 = 0.024, 0.040             # s 平台期比较窗口
 
-# C 管线锚点表：队友仅交付单 Re 工况，将平台期系数铺到轨迹 Re 区间两个端点
+# C 管线锚点表：交接数据仅含单一 Re 工况，故将平台期系数扩展至轨迹 Re 区间两端
 RE_ANCHOR = (4.2e5, 4.7e5)      # 轨迹 |u|≈28-31.5 m/s 对应的 Re 区间
 ANCHOR_VERSION = "handoff_anchor_Re468k"
 

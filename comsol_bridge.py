@@ -91,7 +91,7 @@ class ComsolAeroBridge:
         - 未加载图谱：返回明确标记为未验证的占位值（教学基准），flag=True。"""
         re, s = self.compute_re_and_spin_ratio(v_vec, omega_vec)
         if not self.data_loaded:
-            # 占位默认值：等 COMSOL 数据后替换；未验证，必须触发外推/占位警告
+            # 缺失工况的占位默认值：在替换为交付数据前不可用于预测，调用时必须触发外推与占位警告
             return 0.25, 0.20, 0.0, True
 
         log_re = np.clip(np.log10(re), self._re_bounds[0], self._re_bounds[1])

@@ -15,6 +15,11 @@ ZH = {
     "app_title": "UPC 2026 Problem B · Team 991 · 点球轨迹预测实验台",
     # ---- 侧边栏 1：观测数据 ----
     "sec1_obs": "1. 观测数据",
+    "sec1_desc": "本区是预测的唯一数据入口：\n"
+                 "- **算例下拉框**：内置六类预设球路，选择后自动填入全部输入，仍可逐项手改；\n"
+                 "- **观测时刻与坐标**：$t_1$、$t_2$ 与两帧球心坐标 $(x_1,y_1,z_1)$、$(x_2,y_2,z_2)$ 共 8 个数值输入可直接编辑；\n"
+                 "- **第三观测帧**：勾选后补充 $(t_3, r_3)$。两帧误差在过门线时刻约放大 $60\\text{–}80$ 倍，"
+                 "第三帧经最小二乘约束可显著抑制放大、收窄置信区域。",
     "preset_label": "经典算例（选择后自动填入，可再手动修改）",
     "t1_label": "观测时刻 t₁ (s)",
     "t2_label": "观测时刻 t₂ (s)",
@@ -27,6 +32,10 @@ ZH = {
                    "增加第三帧经最小二乘约束可显著抑制该放大",
     # ---- 侧边栏 2：误差模型 ----
     "sec2_err": "2. 误差模型与样本预算",
+    "sec2_desc": "- **误差模型单选**：独立高斯 $\\sigma_r$（滑块在 $1$–$50$ mm 连续调节）与均匀舍入 "
+                 "$\\pm 0.005$ m（等效 $\\sigma \\approx 2.9$ mm）；\n"
+                 "- **样本数滑块**：在 $300/600/1000/2000$ 中选择蒙特卡洛规模；"
+                 "样本越多，概率估计越稳定，但响应越慢。",
     "err_label": "观测误差模型",
     "err_gauss": "独立高斯 σᵣ",
     "err_uniform": "独立均匀舍入 ±0.005 m",
@@ -36,6 +45,12 @@ ZH = {
     "n_samples": "蒙特卡洛样本数（平台预览）",
     # ---- 侧边栏 3：管线 ----
     "sec3_pipe": "3. 气动模型管线",
+    "sec3_desc": "管线决定气动闭合方式，下方参数表随选择即时更新：\n"
+                 "- **A-1**：固定 $C_D = 0.25$，反演 $v_0$ 与两个横向有效旋转分量 $\\Omega_{\\rm eff}$（共 5 参数，稳健基线）；\n"
+                 "- **A-2**：联合反演 $\\log C_D$（共 6 参数），以 SVD 条件数 $\\kappa$ 区分“可拟合”与“可辨识”；\n"
+                 "- **B**：文献气动曲线（Asai 2007 风洞拟合 + Goff & Carré 2009/2010 轨迹分析），"
+                 "反演真实横向自旋 $\\omega_\\perp$；\n"
+                 "- **C**：COMSOL 风洞锚点表（交接数据自动生成），同样反演真实横向自旋 $\\omega_\\perp$。",
     "pipe_label": "选择 A/B/C 管线",
     "pipe_help": "A-1：固定 C_D 反演 v₀ + 2 横向有效旋转；A-2：六参数候选（需 SVD 诊断）；"
                  "B：文献气动曲线；C：COMSOL 系数图谱",
@@ -127,6 +142,10 @@ ZH = {
     "ps_c_ref_v": "C<sub>D</sub> = 0.126（零转平台期平均）",
     # ---- 侧边栏 4：风场 ----
     "sec4_wind": "4. 风场与自旋设定",
+    "sec4_desc": "- **风速三分量**：$w=(w_x, w_y, w_z)$ 直接修改风场；\n"
+                 "- **自旋轴向分量** $\\omega_\\parallel$：仅诊断/敏感性量，对经典 Magnus 力无直接贡献，"
+                 "不得解释为已识别的真实角速度；\n"
+                 "- **显示开关**：控制 3D 可能位置云团与球门平面图例；关闭后速度/升力/加速度矢量箭头更清晰。",
     "wind_x": "风速 x 分量 (m/s)",
     "wind_y": "风速 y 分量 (m/s)",
     "wind_z": "风速 z 分量 (m/s)",
@@ -272,6 +291,13 @@ EN = {
     "btn_lang": "中文",
     "app_title": "UPC 2026 Problem B · Team 991 · Penalty-Trajectory Prediction Workbench",
     "sec1_obs": "1. Observation Data",
+    "sec1_desc": "This section is the only data entry of the prediction:\n"
+                 "- **Case dropdown**: six preset ball paths; selecting one auto-fills all inputs below, "
+                 "which remain manually editable;\n"
+                 "- **Times and coordinates**: $t_1$, $t_2$ and the two ball-centre coordinates "
+                 "$(x_1,y_1,z_1)$, $(x_2,y_2,z_2)$ — eight numeric inputs — are directly editable;\n"
+                 "- **Third frame**: checking it adds $(t_3, r_3)$. Two-frame errors are magnified by a "
+                 "factor $60$–$80$ at the goal line; a third frame strongly suppresses this amplification.",
     "preset_label": "Benchmark cases (auto-filled; editable)",
     "t1_label": "Observation time t₁ (s)",
     "t2_label": "Observation time t₂ (s)",
@@ -283,6 +309,10 @@ EN = {
     "use_t3_help": "Errors from two frames are amplified by a factor of 60–80 at the goal plane; "
                    "a third frame constrains the least-squares fit and strongly suppresses this amplification",
     "sec2_err": "2. Error Model and Sample Budget",
+    "sec2_desc": "- **Error-model radio**: independent Gaussian $\\sigma_r$ (slider over $1$–$50$ mm) "
+                 "or uniform rounding $\\pm 0.005$ m (equivalent $\\sigma \\approx 2.9$ mm);\n"
+                 "- **Sample slider**: Monte Carlo budget $300/600/1000/2000$; more samples give "
+                 "stabler probability estimates at the cost of response time.",
     "err_label": "Observation error model",
     "err_gauss": "Independent Gaussian σᵣ",
     "err_uniform": "Independent uniform rounding ±0.005 m",
@@ -291,6 +321,16 @@ EN = {
     "sigma_equiv": "Equivalent σ ≈ {v} m",
     "n_samples": "Monte Carlo sample size (preview)",
     "sec3_pipe": "3. Aerodynamic Model Pipelines",
+    "sec3_desc": "The pipeline fixes the aerodynamic closure (the parameter table below updates "
+                 "immediately):\n"
+                 "- **A-1**: fixed $C_D = 0.25$; inverts $v_0$ and two transverse effective-spin "
+                 "components $\\Omega_{\\rm eff}$ (5 parameters, robust baseline);\n"
+                 "- **A-2**: jointly inverts $\\log C_D$ (6 parameters), with SVD condition number "
+                 "$\\kappa$ separating 'fittable' from 'identifiable';\n"
+                 "- **B**: literature coefficient curves (Asai 2007 wind-tunnel fit; Goff & Carré "
+                 "2009/2010 trajectory analysis); inverts true transverse spin $\\omega_\\perp$;\n"
+                 "- **C**: COMSOL wind-tunnel anchor table (auto-generated from hand-off data); "
+                 "likewise inverts true transverse spin $\\omega_\\perp$.",
     "pipe_label": "Select pipeline A/B/C",
     "pipe_help": "A-1: fixed C_D, invert v₀ + 2 transverse effective spins; A-2: six-parameter candidate "
                  "(requires SVD diagnostics); B: literature aerodynamic curves; C: COMSOL coefficient map",
@@ -389,6 +429,12 @@ EN = {
     "ps_c_dom_v": "Re ∈ [4.2×10⁵, 4.7×10⁵], |S| ≤ 0.175",
     "ps_c_ref_v": "C<sub>D</sub> = 0.126 (zero-spin plateau mean)",
     "sec4_wind": "4. Wind and Spin Settings",
+    "sec4_desc": "- **Wind components**: $w=(w_x, w_y, w_z)$ edits the wind field directly;\n"
+                 "- **Axial spin** $\\omega_\\parallel$: diagnostic/sensitivity quantity only — no "
+                 "contribution to the classical Magnus force, not to be read as an identified angular "
+                 "velocity;\n"
+                 "- **Display toggles**: 3D possible-position cloud and goal-plane legend; turning them "
+                 "off makes the vector arrows clearer.",
     "wind_x": "Wind x-component (m/s)",
     "wind_y": "Wind y-component (m/s)",
     "wind_z": "Wind z-component (m/s)",

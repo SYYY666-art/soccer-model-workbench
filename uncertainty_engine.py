@@ -89,7 +89,7 @@ class UncertaintyAndTestEngine:
         cov = np.atleast_2d(inv["cov_theta"])
         J_pg = np.atleast_2d(base_res["sensitivity"])          # (3, p)
 
-        # ---- 1) 观测误差抽样 → 三点法解析快速重反演 v0 / a（第三帧用最小二乘） ----
+        # ---- 步骤 1：观测误差抽样；以三点解析法快速重反演 v₀ 与加速度（含第三帧时转最小二乘） ----
         t3 = base_res.get("t3")
         r3 = base_res.get("r3")
         if t3 is not None:
@@ -111,13 +111,13 @@ class UncertaintyAndTestEngine:
             mc_v0[:, d] = va[0]
             mc_a[:, d] = va[1]
 
-        # ---- 2) 参数后验抽样（多元正态；log C_D 在变换空间抽样） ----
+        # ---- 步骤 2：参数后验抽样（多元正态；log C_D 在变换空间抽样） ----
         try:
             theta_dev = rng.multivariate_normal(np.zeros(p), cov, size=n_samples)
         except Exception:
             theta_dev = np.zeros((n_samples, p))
 
-        # ---- 3) MAP 轨迹相对解析基线的气动偏移 ----
+        # ---- 步骤 3：MAP 轨迹相对解析基线的气动偏移 ----
         delta_aero = base_res["states_ode"][:3, :] - base_res["pos_ca"]   # (3, N) 供粒子云
         p_g_ca = SimConfig.R0 + base_res["v0_ca"] * base_res["t_goal_ca"] \
             + 0.5 * base_res["acc_ca"] * base_res["t_goal_ca"] ** 2
@@ -126,7 +126,7 @@ class UncertaintyAndTestEngine:
         dt_shift = t_ev - base_res["t_goal_ca"]
         dp_shift = p_ev - p_g_ca
 
-        # ---- 4) 每样本事件量（解析落点 + 气动偏移 + 一阶参数传播） ----
+        # ---- 步骤 4：每样本事件量（解析落点 + 气动偏移 + 一阶参数传播） ----
         disc = mc_v0[:, 0] ** 2 - 2.0 * mc_a[:, 0] * (SimConfig.R0[0] - SimConfig.GOAL_X)
         ax_mc = mc_a[:, 0]
         with np.errstate(divide="ignore", invalid="ignore"):
@@ -146,7 +146,7 @@ class UncertaintyAndTestEngine:
         y_g = p_g[:, 1]
         z_g = p_g[:, 2]
 
-        # ---- 5) 事件标签分类（不删除任何样本） ----
+        # ---- 步骤 5：事件标签分类（不删除任何样本） ----
         timeout = (t_g <= 0) | (t_g > SimConfig.T_MAX_FLIGHT)
         ground = (~timeout) & (z_g <= SimConfig.RADIUS)
         reach = (~timeout) & (~ground)
@@ -182,7 +182,7 @@ class UncertaintyAndTestEngine:
             "P_near_tangent": float(near_tangent.mean()),
         }
 
-        # ---- 6) 落点统计（基于到达球门平面的样本） ----
+        # ---- 步骤 6：落点统计（基于到达球门平面的样本） ----
         stats = {"t_g": {}, "y": {}, "z": {}, "ellipse_pts": None, "hdr": None, "mode": None}
         if n_reach:
             gy, gz = y_g[reach], z_g[reach]

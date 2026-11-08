@@ -5,9 +5,9 @@ from config import SimConfig
 
 
 # =====================================================================
-# 第 1 部分：A / B / C 三条气动闭合管线（论文 §4）
-# 三条管线共享同一状态接口、观测似然、参数约束、积分器与事件定位，
-# 只改变气动闭合关系，保证模型间比较公平。
+# 模块 1：A/B/C 三种气动闭合管线（论文 §4）
+# 三种管线共享同一状态接口、观测似然、参数约束、积分器与事件定位，
+# 仅改变气动闭合关系，从而保证模型间比较的公平性。
 # =====================================================================
 class AeroClosureBase:
     """气动闭合统一接口：输入相对风速 u 与角速度 omega，输出 (Cd, Cl, Cs, extrapolation_flag)。"""
@@ -86,7 +86,7 @@ class ClosureC(AeroClosureBase):
 
 
 # =====================================================================
-# 第 2 部分：三维动力学母模型与事件积分（论文 §3/§8.1）
+# 模块 2：三维动力学母模型与事件积分（论文 §3/§8.1）
 # =====================================================================
 def make_rhs(closure, wind, omega_mode):
     """构造 RHS(t, s, omega)。
@@ -157,7 +157,7 @@ def integrate_flight(rhs, omega_vec, v0, t_max=None, max_step=None,
 
 
 # =====================================================================
-# 第 3 部分：数据诊断基线（论文 §2）
+# 模块 3：数据诊断基线（论文 §2）
 # =====================================================================
 class TrajectoryPhysicsEngine:
     """三维动力学反演与预测引擎：基线诊断 + 受约束 MAP 反演 + 事件定位 + 灵敏度。"""
@@ -223,12 +223,12 @@ class TrajectoryPhysicsEngine:
         r1, r2 = np.asarray(r1, dtype=float), np.asarray(r2, dtype=float)
         g = SimConfig.GRAVITY
 
-        # (a) 只用 t1 帧
+        # (a) 仅利用 t₁ 帧提供的约束
         v0_a = (r1 - SimConfig.R0) / t1 - 0.5 * g * t1
         t_g_a = (SimConfig.GOAL_X - SimConfig.R0[0]) / v0_a[0] if v0_a[0] > 1e-3 else np.nan
         p_g_a = SimConfig.R0 + v0_a * t_g_a + 0.5 * g * t_g_a ** 2
 
-        # (b) 全部观测最小二乘
+        # (b) 全部观测帧的最小二乘拟合
         t_vec = np.array([t1, t2] + ([t3] if t3 is not None else []), dtype=float)
         obs = np.vstack([r1, r2])
         if t3 is not None:
@@ -245,7 +245,7 @@ class TrajectoryPhysicsEngine:
                 "v0_ls": v0_b, "t_g_ls": t_g_b, "p_g_ls": p_g_b}
 
     # =====================================================================
-    # 第 4 部分：受约束 MAP 反演（论文 §5）
+    # 模块 4：受约束 MAP 反演（论文 §5）
     # =====================================================================
     def _build_basis(self, r2):
         """构造局部正交基底：e0 沿参考速度方向，e1、e2 为两个横向方向。
@@ -329,8 +329,8 @@ class TrajectoryPhysicsEngine:
             v0, cd, omega = pack_theta(theta)
             closure_local = ClosureA(cd) if model_id == "A-2" else closure
             rhs = make_rhs(closure_local, wind, omega_mode)
-            # 反演内层用 LSODA 加速（实测比 DOP853 快约 5 倍），
-            # 最终事件定位仍按论文 §8 规范使用高精度 DOP853
+            # 反演内层采用 LSODA 加速（实测较 DOP853 快约 5 倍）；
+            # 最终事件定位仍遵循论文 §8 的高精度 DOP853 规范
             sol = solve_ivp(
                 lambda t, s: rhs(t, s, omega), [0.0, t_span],
                 np.concatenate([SimConfig.R0, v0]),
@@ -339,13 +339,13 @@ class TrajectoryPhysicsEngine:
             )
             pred = sol.sol(times)[:3].T
             res = ((pred - obs) / sigma_obs).ravel()
-            # 弱先验惩罚项（MAP 目标）
+            # 弱先验正则项（MAP 目标函数）
             if model_id == "A-2":
                 res = np.append(res, (theta[3] - logcd_prior_mean) / SimConfig.CD_A_PRIOR_SIGMA_LOG)
             res = np.append(res, [theta[n_par - 2] / o_prior_sigma, theta[n_par - 1] / o_prior_sigma])
             return res
 
-        # 多起点
+        # 多起点优化：以不同初值规避局部极值
         base = np.zeros(n_par)
         base[:3] = v0_ca
         if model_id == "A-2":
@@ -399,7 +399,7 @@ class TrajectoryPhysicsEngine:
         return v0_opt, cd_opt, omega_opt, inversion, closure
 
     # =====================================================================
-    # 第 5 部分：主预测（反演 → 事件积分 → 网格状态）
+    # 模块 5：主预测（反演 → 事件积分 → 网格状态）
     # =====================================================================
     def predict(self, model_id, t1, t2, r1, r2, sigma_obs=0.010, wind=None,
                 fix_cd=None, lam_parallel=0.0, n_starts=3, t3=None, r3=None):
@@ -458,7 +458,7 @@ class TrajectoryPhysicsEngine:
         }
 
         return {
-            # ---- 兼容旧接口的网格状态 ----
+            # 网格化状态输出（供可视化与统计复用）
             "t_eval": t_eval,
             "states_ode": states_ode,
             "acc_total": acc_total,
@@ -530,7 +530,7 @@ class TrajectoryPhysicsEngine:
                     ClosureA(fix_cd) if model_id == "A-1" else closure_b)
                 rhs_t = make_rhs(closure_t, wind, omega_mode)
                 try:
-                    # 灵敏度差分采用 LSODA 加速 + 较低容差，精度足够用于一阶传播
+                    # 灵敏度差分采用 LSODA 加速并放宽容差；该精度对一阶误差传播已充分
                     sol_t, lab_t, te_t = integrate_flight(
                         rhs_t, omt, v0t, method="LSODA", rtol=1e-5, atol=1e-7)
                     pe_t = sol_t.sol(te_t)[:3] if te_t is not None else np.full(3, np.nan)

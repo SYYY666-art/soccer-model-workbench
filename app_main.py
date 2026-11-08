@@ -189,7 +189,7 @@ def main():
     st.set_page_config(page_title="Team 991 | UPC 2026 Problem B Workbench", layout="wide")
     inject_clean_css()
 
-    # ---- 语言切换（中 / 英） ----
+    # ---- 双语切换（中文 / 英文） ----
     if "lang" not in st.session_state:
         st.session_state.lang = "zh"
     lang = st.session_state.lang
@@ -198,17 +198,18 @@ def main():
 
     bridge, phys_engine, unc_engine = init_engines()
 
-    # ==================== 1. 侧边栏 ====================
+    # ==================== 模块 1：交互输入面板（侧边栏） ====================
     with st.sidebar:
         if st.button(L["btn_lang"], width="stretch"):
             st.session_state.lang = "en" if lang == "zh" else "zh"
             st.rerun()
 
         st.header(L["sec1_obs"])
+        st.markdown(L["sec1_desc"], unsafe_allow_html=True)
 
-        # 经典算例库：选择后自动填入坐标，仍可手动微调任意输入
+        # 预设算例库：选择后回填全部输入，并保持完全可编辑
         preset_names = list(SimConfig.CASE_PRESETS)
-        # 首次进入：输入框预置基准算例（赛题数据）的取值
+        # 会话初始化：首次进入时以基准算例（赛题观测）填充输入控件
         _default_obs = {
             "t1_in": SimConfig.DEFAULT_T1, "t2_in": SimConfig.DEFAULT_T2,
             "x1_in": float(SimConfig.DEFAULT_R1[0]), "y1_in": float(SimConfig.DEFAULT_R1[1]),
@@ -218,7 +219,7 @@ def main():
         for _k, _v in _default_obs.items():
             if _k not in st.session_state:
                 st.session_state[_k] = _v
-        # 选项显示名随语言变化（内部 key 固定），用 index 在 session 中保留选择
+        # 显示名随语言切换（内部键固定），以索引在会话状态中保持选择
         display_names = [SimConfig.CASE_PRESETS[k].get("name_en", k) if lang == "en" else k
                          for k in preset_names]
         if "preset_idx" not in st.session_state:
@@ -260,7 +261,7 @@ def main():
         r1 = np.array([x1, y1, z1])
         r2 = np.array([x2, y2, z2])
 
-        # 可选第三观测帧：信息量显著增加，预测不确定性大幅缩小（论文 §1.3/§5.2）
+        # 可选第三观测帧：信息量显著增加，预测不确定性大幅缩小（对应论文 §1.3 与 §5.2）
         use_t3 = st.checkbox(L["use_t3"], value=False, help=L["use_t3_help"], key="use_t3_in")
         if use_t3:
             t3 = st.number_input(L["t3_label"], value=0.15, step=0.01, format="%.2f", key="t3_in")
@@ -275,7 +276,8 @@ def main():
 
         st.divider()
         st.header(L["sec2_err"])
-        # radio 选项文本随语言变化，不能绑定 key；用 index 手动在 session 中保留选择
+        st.markdown(L["sec2_desc"], unsafe_allow_html=True)
+        # 单选项文本随语言变化，不宜绑定固定键；以索引在会话状态中保持选择
         if "err_idx" not in st.session_state:
             st.session_state.err_idx = 0
         err_choice = st.radio(
@@ -297,6 +299,7 @@ def main():
 
         st.divider()
         st.header(L["sec3_pipe"])
+        st.markdown(L["sec3_desc"], unsafe_allow_html=True)
         model_id = st.selectbox(
             L["pipe_label"],
             ["A-2", "A-1", "B", "C"],
@@ -328,6 +331,7 @@ def main():
 
         st.divider()
         st.header(L["sec4_wind"])
+        st.markdown(L["sec4_desc"], unsafe_allow_html=True)
         wx = st.number_input(L["wind_x"], value=0.0, step=0.5, format="%.1f", key="wx_in")
         wy = st.number_input(L["wind_y"], value=0.0, step=0.5, format="%.1f", key="wy_in")
         wz = st.number_input(L["wind_z"], value=0.0, step=0.5, format="%.1f", key="wz_in")
@@ -340,7 +344,7 @@ def main():
         show_legend_2d = st.checkbox(L["legend_check"], value=False, help=L["legend_help"],
                                      key="legend_in")
 
-    # ==================== 2. 合法性校验 ====================
+    # ==================== 模块 2：合法性校验 ====================
     if t1 <= 0 or t2 <= t1:
         st.error(L["err_t12"])
         st.stop()
@@ -348,7 +352,7 @@ def main():
         st.error(L["err_t123"])
         st.stop()
 
-    # ==================== 3. 主模型反演与概率传播 ====================
+    # ==================== 模块 3：主模型反演与概率传播 ====================
     sigma_obs = sigma_r if err_model == "gaussian" else SimConfig.ROUNDING_HALFWIDTH / np.sqrt(3.0)
     fix_cd = SimConfig.CD_A_PRIOR_MEAN if model_id == "A-1" else None
     t3_arg = float(t3) if use_t3 else None
@@ -375,7 +379,7 @@ def main():
     else:
         cd_se, o_se, o_val = 0.0, (se[3], se[4]), (theta[3], theta[4])
 
-    # ==================== 4. 顶部时间进度条与快捷跳转 ====================
+    # ==================== 模块 4：顶部时间进度条与快捷跳转 ====================
     t_end = float(base_res["t_eval"][-1])
     slider_step = max(0.001, round(t_end / 200.0, 3))
     if "frame_time" not in st.session_state:
@@ -410,7 +414,7 @@ def main():
     amag_curr = base_res["acc_magnus"][:, frame_idx]
     mc_cloud_curr = unc_engine.get_cloud_at_frame(mc_data, t_curr, frame_idx)
 
-    # ==================== 5. 指标卡片 ====================
+    # ==================== 模块 5：指标卡片 ====================
     st.write("")
     k1, k2, k3, k4, k5, k6 = st.columns(6)
     render_card(k1, L["card_event"], L["event_" + base_res["event_label"]],
@@ -450,7 +454,7 @@ def main():
 
     st.write("")
 
-    # ==================== 6. 主视图 ====================
+    # ==================== 模块 6：主视图 ====================
     col_left, col_right = st.columns([1.42, 1.0])
     with col_left:
         fig_3d = PenaltyVisualizer3D.build_3d_stadium_figure(
@@ -464,7 +468,7 @@ def main():
     if base_res["near_tangent"]:
         st.warning(L["warn_tangent"])
 
-    # ==================== 7. 数据诊断基线（论文 §2） ====================
+    # ==================== 模块 7：数据诊断基线（论文 §2） ====================
     with st.expander(L["exp_base"]):
         bs = base_res["baselines"]
         v01, v12, v23 = bs["interval"]
@@ -497,7 +501,7 @@ def main():
             min_width="680px")
         st.caption(L["cap_base"])
 
-    # ==================== 8. 事件标签统计与分位数 ====================
+    # ==================== 模块 8：事件标签统计与分位数 ====================
     with st.expander(L["exp_events"]):
         t_col1, t_col2 = st.columns(2)
         with t_col1:
@@ -528,7 +532,7 @@ def main():
                 ], min_width="640px")
             st.caption(L["cap_quant"])
 
-    # ==================== 9. 模型包络与方差分解（论文 §6.1） ====================
+    # ==================== 模块 9：模型包络与方差分解（论文 §6.1） ====================
     with st.expander(L["exp_env"]):
         do_env = st.checkbox(L["env_check"], value=False)
         if do_env:
@@ -556,7 +560,7 @@ def main():
                 ez=decomp['E_var_z'], vz=decomp['var_E_z'], fz=decomp['fraction_between_z']))
             st.caption(L["cap_env"])
 
-    # ==================== 10. COMSOL 实测数据对照（论文 §7） ====================
+    # ==================== 模块 10：COMSOL 实测数据对照（论文 §7） ====================
     @st.cache_data(show_spinner=False)
     def _comsol_handoff():
         return comsol_lab.analyze()
