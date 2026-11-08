@@ -613,15 +613,6 @@ def main():
             if hf["reverse_magnus"]:
                 st.warning(L["warn_reverse"])
 
-            # ---- 英文图注 ----
-            st.markdown(f"**{L['cap_title']}**")
-            caps = comsol_lab.captions_en(hf)
-            st.code(
-                f"Fig. A1 — {caps['mesh']}\n\n"
-                f"Fig. A2 — {caps['forces']}\n\n"
-                f"Fig. A3 — {caps['pressure']}",
-                language=None)
-
 
 if __name__ == "__main__":
     main()
